@@ -90,7 +90,7 @@ ragarena/
 - [ ] Project scaffold and folder structure
 - [X] SQLAlchemy async models
 - [X] config.py setup
-- [ ] LangGraph ingestion agent
+- [X] LangGraph ingestion agent
 - [ ] Naive RAG pipeline
 - [ ] Basic FastAPI endpoints (ingest + run, no Celery)
 
