@@ -1,9 +1,8 @@
 from pydantic_settings import BaseSettings
 
-
 class Settings(BaseSettings):
     hf_api_key: str
-    hf_model: str = "mistralai/Mistral-7B-Instruct-v0.3"
+    hf_model: str = "meta-llama/Llama-3.1-8B-Instruct"
     hf_embed_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     tavily_api_key: str
     database_url: str
