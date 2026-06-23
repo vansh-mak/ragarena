@@ -87,11 +87,11 @@ ragarena/
 
 ## Build sequence (MVP plan)
 ### MVP 1 — COMPLETE / IN PROGRESS / TODO (update this as you go)
-- [ ] Project scaffold and folder structure
+- [X] Project scaffold and folder structure
 - [X] SQLAlchemy async models
 - [X] config.py setup
 - [X] LangGraph ingestion agent
-- [ ] Naive RAG pipeline
+- [X] Naive RAG pipeline
 - [ ] Basic FastAPI endpoints (ingest + run, no Celery)
 
 ### MVP 2
