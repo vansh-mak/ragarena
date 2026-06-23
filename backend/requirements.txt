@@ -1,5 +1,4 @@
 fastapi
-openai
 uvicorn[standard]
 python-dotenv
 pydantic
@@ -8,9 +7,8 @@ sqlalchemy
 asyncpg
 celery
 redis
-anthropic
+huggingface_hub
 langchain
-langchain-anthropic
 langgraph
 langchain-community
 chromadb

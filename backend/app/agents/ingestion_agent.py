@@ -1,16 +1,14 @@
 import asyncio
-import hashlib
 import json
 import re
 from typing import TypedDict
 
-import anthropic
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langgraph.graph import StateGraph, END
-from openai import AsyncOpenAI
 from tavily import AsyncTavilyClient
 
 from app.config import settings
+from app.llm_client import LLMClient
 
 
 class AgentState(TypedDict):
@@ -23,21 +21,15 @@ class AgentState(TypedDict):
 
 
 async def query_expansion_node(state: AgentState) -> AgentState:
-    client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+    llm = LLMClient()
     prompt = (
         f"Generate exactly 5 diverse sub-queries to research the topic: '{state['topic']}' "
         f"in the niche: '{state['niche']}'. "
         "Cover different angles: definitions, comparisons, use cases, limitations, recent developments. "
         "Return ONLY a JSON array of 5 strings, no explanation."
     )
-    message = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=512,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    raw = message.content[0].text.strip()
-    # Strip markdown code fences if present
-    raw = re.sub(r"^```(?:json)?\s*", "", raw)
+    raw = llm.generate(prompt)
+    raw = re.sub(r"^```(?:json)?\s*", "", raw.strip())
     raw = re.sub(r"\s*```$", "", raw)
     sub_queries: list[str] = json.loads(raw)
     return {**state, "sub_queries": sub_queries[:5]}
@@ -93,9 +85,8 @@ async def content_extraction_node(state: AgentState) -> AgentState:
 
 async def chunk_embed_node(state: AgentState) -> AgentState:
     splitter = RecursiveCharacterTextSplitter(chunk_size=512, chunk_overlap=64)
-    oai = AsyncOpenAI(api_key=settings.openai_api_key)
+    llm = LLMClient()
 
-    all_chunks: list[dict] = []
     texts_to_embed: list[str] = []
     metadata_list: list[dict] = []
 
@@ -107,21 +98,13 @@ async def chunk_embed_node(state: AgentState) -> AgentState:
     if not texts_to_embed:
         return {**state, "chunks": []}
 
-    # Batch embed in groups of 100 (OpenAI limit is 2048 but keep batches small)
-    embeddings: list[list[float]] = []
-    batch_size = 100
-    for i in range(0, len(texts_to_embed), batch_size):
-        batch = texts_to_embed[i : i + batch_size]
-        response = await oai.embeddings.create(
-            model="text-embedding-3-small",
-            input=batch,
-        )
-        embeddings.extend([e.embedding for e in response.data])
+    embeddings = llm.embed(texts_to_embed)
 
-    for text, embedding, metadata in zip(texts_to_embed, embeddings, metadata_list):
-        all_chunks.append({"text": text, "embedding": embedding, "metadata": metadata})
-
-    return {**state, "chunks": all_chunks}
+    chunks = [
+        {"text": text, "embedding": embedding, "metadata": metadata}
+        for text, embedding, metadata in zip(texts_to_embed, embeddings, metadata_list)
+    ]
+    return {**state, "chunks": chunks}
 
 
 def get_ingestion_agent():
