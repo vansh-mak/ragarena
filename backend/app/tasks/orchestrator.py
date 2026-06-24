@@ -49,6 +49,9 @@ def aggregate_results(results: list[dict], run_id: str, queries: list[str]) -> N
     r.set(f"run:{run_id}:status", "eval_ready")
     r.set(f"run:{run_id}:progress", "100")
 
+    from app.tasks.eval_tasks import run_eval_task
+    run_eval_task.apply_async(args=[run_id, queries], queue="eval")
+
 
 def run_benchmark_chord(run_id: str, queries: list[str]):
     _PIPELINE_TASKS = [

@@ -20,4 +20,5 @@ celery_app.conf.update(
 celery_app.autodiscover_tasks([
     "app.tasks.pipeline_tasks",
     "app.tasks.orchestrator",
+    "app.tasks.eval_tasks",
 ])

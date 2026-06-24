@@ -4,13 +4,21 @@ from pathlib import Path
 
 import numpy as np
 from rank_bm25 import BM25Okapi
-from sentence_transformers import CrossEncoder
 
 from app.config import settings
 from app.llm_client import LLMClient
 
 PIPELINE_ID = "vectorless"
-_RERANKER_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+_RERANKER_MODEL_NAME = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+_reranker = None
+
+
+def get_reranker():
+    global _reranker
+    if _reranker is None:
+        from sentence_transformers import CrossEncoder
+        _reranker = CrossEncoder(_RERANKER_MODEL_NAME)
+    return _reranker
 
 
 class VectorlessRAGPipeline:
@@ -42,7 +50,7 @@ class VectorlessRAGPipeline:
         top_2k_idx = np.argsort(scores)[::-1][: k * 2]
         candidates = [texts[i] for i in top_2k_idx]
 
-        reranker = CrossEncoder(_RERANKER_MODEL)
+        reranker = get_reranker()
         pairs = [(query, doc) for doc in candidates]
         rerank_scores = reranker.predict(pairs)
 

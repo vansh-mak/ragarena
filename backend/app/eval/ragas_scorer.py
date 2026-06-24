@@ -24,8 +24,8 @@ from ragas.metrics._context_precision import ContextPrecision  # noqa: E402
 from ragas.metrics._context_recall import ContextRecall  # noqa: E402
 from ragas.metrics._faithfulness import Faithfulness  # noqa: E402
 
-from langchain_community.llms import Ollama  # noqa: E402
-from langchain_community.embeddings import OllamaEmbeddings  # noqa: E402
+from langchain_ollama import OllamaLLM as Ollama  # noqa: E402
+from langchain_ollama import OllamaEmbeddings  # noqa: E402
 
 
 def _safe_float(value) -> float:
