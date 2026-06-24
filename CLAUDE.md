@@ -92,7 +92,7 @@ ragarena/
 - [X] config.py setup
 - [X] LangGraph ingestion agent
 - [X] Naive RAG pipeline
-- [ ] Basic FastAPI endpoints (ingest + run, no Celery)
+- [X] Basic FastAPI endpoints (ingest + run, no Celery)
 
 ### MVP 2
 - [ ] HyDE + RAG-Fusion pipeline
