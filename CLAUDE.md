@@ -95,7 +95,7 @@ ragarena/
 - [X] Basic FastAPI endpoints (ingest + run, no Celery)
 
 ### MVP 2
-- [ ] HyDE + RAG-Fusion pipeline
+- [X] HyDE + RAG-Fusion pipeline
 - [ ] Vectorless RAG pipeline
 - [ ] Self-RAG / CRAG pipeline
 - [ ] Celery setup + parallel dispatch
