@@ -7,12 +7,12 @@ sqlalchemy
 asyncpg
 celery
 redis
-huggingface_hub
+ollama
 langchain
 langgraph
 langchain-community
+langchain-text-splitters
 chromadb
-sentence-transformers
 rank-bm25
 tavily-python
 ragas

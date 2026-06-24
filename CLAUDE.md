@@ -17,7 +17,8 @@ thinking, production infrastructure, and full-stack AI engineering.
 - Agents: LangGraph
 - Task queue: Celery + Redis
 - Vector store: ChromaDB (namespaced per pipeline per run)
-- LLM: Claude claude-sonnet-4-6 via Anthropic API
+- LLM: llama3.2 via Ollama (local, http://localhost:11434)
+- Embeddings: nomic-embed-text via Ollama (local)
 - Evaluation: Ragas + custom LLM-as-judge
 - Graph store: NetworkX (persisted with pickle)
 - BM25: rank-bm25 + cross-encoder reranker
@@ -75,7 +76,7 @@ ragarena/
 - query_tags: query type classification per query
 
 ## Key design decisions (do not change these)
-- Single embedding model (text-embedding-3-small) across all vector pipelines
+- Single embedding model (nomic-embed-text via Ollama) across all vector pipelines
   — isolates retrieval strategy as the variable, not embedding quality
 - retrieval_ms and generation_ms tracked separately inside each pipeline
 - Composite score stored at default weights; dashboard reweights at read time
@@ -83,7 +84,8 @@ ragarena/
 - BM25 + graph indexes persisted to disk at {CHROMADB_PATH}/{pipeline}_{run_id}/
 - Celery chord pattern: group(7 tasks) | callback for parallel execution
 - Eval weights configurable via ScoringConfig but default is 50/30/20
-- All LLM calls use claude-sonnet-4-6
+- All LLM calls use llama3.2 via Ollama running locally on port 11434
+- Ollama must be running before starting the backend (ollama serve)
 
 ## Build sequence (MVP plan)
 ### MVP 1 — COMPLETE
@@ -94,7 +96,7 @@ ragarena/
 - [X] Naive RAG pipeline
 - [X] Basic FastAPI endpoints (ingest + run, no Celery)
 
-### MVP 2 - IN PROGRESS
+### MVP 2 - COMPLETE
 - [X] HyDE + RAG-Fusion pipeline
 - [X] Vectorless RAG pipeline
 - [X] Self-RAG / CRAG pipeline
@@ -103,6 +105,7 @@ ragarena/
 - [X] KAG / CAG pipeline
 - [X] Celery setup + parallel dispatch
 - [X] Redis status tracking
+- [X] Switched LLM backend to Ollama(llama3.2 + nomic-embed-text)
 
 ### MVP 3 - TO DO
 - [ ] Ragas scorer
@@ -121,15 +124,19 @@ ragarena/
 
 ## How to run locally
 ```bash
+# Start Ollama (must be first)
+# ollama serve
+
 # Start infra
 docker-compose up -d
 
 # Start backend
 cd backend
-uvicorn app.main:app --reload --port 8000
+venv\Scripts\activate
+uvicorn app.main:app --reload --port 8001
 
 # Start Celery worker (MVP 2+)
-celery -A app.tasks.celery_app worker --loglevel=info
+celery -A app.tasks.celery_app worker --loglevel=info -P solo
 
 # Start frontend (MVP 4)
 cd frontend
