@@ -2,8 +2,10 @@ import asyncio
 import logging
 import uuid
 
+import redis as redis_lib
 from sqlalchemy import select, update
 
+from app.config import settings
 from app.database import AsyncSessionLocal
 from app.models.benchmark_run import BenchmarkRun
 from app.models.eval_score import EvalScore
@@ -101,6 +103,10 @@ async def _run_evaluation_async(run_id: str, queries: list[str]) -> None:
             .values(status="complete")
         )
         await session.commit()
+
+    r = redis_lib.from_url(settings.redis_url, decode_responses=True)
+    r.set(f"run:{run_id}:status", "complete")
+    r.set(f"run:{run_id}:progress", "100")
 
     logger.info("Evaluation complete for run_id=%s", run_id)
 
