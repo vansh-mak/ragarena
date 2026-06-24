@@ -31,10 +31,47 @@ async def query_expansion_node(state: AgentState) -> AgentState:
         "Cover different angles: definitions, comparisons, use cases, limitations, recent developments. "
         "Return ONLY a JSON array of 5 strings, no explanation."
     )
-    raw = llm.generate(prompt)
-    raw = re.sub(r"^```(?:json)?\s*", "", raw.strip())
-    raw = re.sub(r"\s*```$", "", raw)
-    sub_queries: list[str] = json.loads(raw)
+    raw = llm.generate(prompt).strip()
+
+    # Strip markdown fences
+    raw = re.sub(r"```json\s*", "", raw)
+    raw = re.sub(r"```\s*", "", raw)
+    raw = raw.strip()
+
+    # Try direct JSON parse
+    sub_queries: list[str] = []
+    try:
+        parsed = json.loads(raw)
+        if isinstance(parsed, list):
+            sub_queries = [str(q) for q in parsed if q]
+    except json.JSONDecodeError:
+        pass
+
+    # Try extracting a JSON array with regex
+    if not sub_queries:
+        match = re.search(r"\[.*?\]", raw, re.DOTALL)
+        if match:
+            try:
+                sub_queries = json.loads(match.group())
+            except json.JSONDecodeError:
+                pass
+
+    # Fallback: split by numbered lines or bullets
+    if not sub_queries:
+        lines = [re.sub(r"^[\d\.\-\*\s]+", "", line).strip()
+                 for line in raw.split("\n") if line.strip()]
+        sub_queries = [l for l in lines if len(l) > 10][:5]
+
+    # Ultimate fallback: generic queries from topic/niche
+    if not sub_queries:
+        sub_queries = [
+            f"{state['topic']} {state['niche']} overview",
+            f"{state['topic']} latest news",
+            f"{state['topic']} explained",
+            f"{state['niche']} policy",
+            f"{state['topic']} impact",
+        ]
+
     return {**state, "sub_queries": sub_queries[:5]}
 
 
