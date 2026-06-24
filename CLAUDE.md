@@ -86,7 +86,7 @@ ragarena/
 - All LLM calls use claude-sonnet-4-6
 
 ## Build sequence (MVP plan)
-### MVP 1 — COMPLETE / IN PROGRESS / TODO (update this as you go)
+### MVP 1 — COMPLETE
 - [X] Project scaffold and folder structure
 - [X] SQLAlchemy async models
 - [X] config.py setup
@@ -94,14 +94,14 @@ ragarena/
 - [X] Naive RAG pipeline
 - [X] Basic FastAPI endpoints (ingest + run, no Celery)
 
-### MVP 2
+### MVP 2 - IN PROGRESS
 - [X] HyDE + RAG-Fusion pipeline
-- [ ] Vectorless RAG pipeline
+- [X] Vectorless RAG pipeline
 - [ ] Self-RAG / CRAG pipeline
 - [ ] Celery setup + parallel dispatch
 - [ ] Redis status tracking
 
-### MVP 3
+### MVP 3 - TO DO
 - [ ] Graph-RAG pipeline
 - [ ] Agentic RAG pipeline
 - [ ] KAG / CAG pipeline
@@ -110,7 +110,7 @@ ragarena/
 - [ ] Score aggregator + composite
 - [ ] Insight generator
 
-### MVP 4
+### MVP 4 - TO DO
 - [ ] Capability profiler + query tagger
 - [ ] React scaffold + routing
 - [ ] Leaderboard page
