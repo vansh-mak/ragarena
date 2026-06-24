@@ -1,4 +1,5 @@
 import json
+import logging
 import pickle
 import re
 import time
@@ -11,6 +12,8 @@ import numpy as np
 
 from app.config import settings
 from app.llm_client import LLMClient
+
+logger = logging.getLogger(__name__)
 
 PIPELINE_ID = "graph_rag"
 _ENTITY_PROMPT = (
@@ -67,27 +70,34 @@ class GraphRAGPipeline:
         # Step 2 & 3 — extract entities/relations, build graph
         llm = LLMClient()
         for chunk_id, chunk in zip(chunk_ids, chunks):
-            raw = llm.generate(_ENTITY_PROMPT.format(text=chunk["text"]))
-            parsed = _parse_entities(raw)
+            try:
+                raw = llm.generate(_ENTITY_PROMPT.format(text=chunk["text"]))
+                parsed = _parse_entities(raw)
 
-            for ent in parsed.get("entities", []):
-                name = ent.get("name", "").strip()
-                if not name:
-                    continue
-                if name not in self.graph:
-                    self.graph.add_node(name, type=ent.get("type", ""), chunk_ids=set())
-                self.graph.nodes[name]["chunk_ids"].add(chunk_id)
+                for ent in parsed.get("entities", []):
+                    if not isinstance(ent, dict):
+                        continue
+                    name = ent.get("name", "").strip()
+                    if not name:
+                        continue
+                    if name not in self.graph:
+                        self.graph.add_node(name, type=ent.get("type", ""), chunk_ids=set())
+                    self.graph.nodes[name]["chunk_ids"].add(chunk_id)
 
-            for rel in parsed.get("relations", []):
-                src = rel.get("src", "").strip()
-                tgt = rel.get("tgt", "").strip()
-                r = rel.get("rel", "").strip()
-                if src and tgt:
-                    if src not in self.graph:
-                        self.graph.add_node(src, type="", chunk_ids=set())
-                    if tgt not in self.graph:
-                        self.graph.add_node(tgt, type="", chunk_ids=set())
-                    self.graph.add_edge(src, tgt, rel=r)
+                for rel in parsed.get("relations", []):
+                    if not isinstance(rel, dict):
+                        continue
+                    src = rel.get("src", "").strip()
+                    tgt = rel.get("tgt", "").strip()
+                    r = rel.get("rel", "").strip()
+                    if src and tgt:
+                        if src not in self.graph:
+                            self.graph.add_node(src, type="", chunk_ids=set())
+                        if tgt not in self.graph:
+                            self.graph.add_node(tgt, type="", chunk_ids=set())
+                        self.graph.add_edge(src, tgt, rel=r)
+            except Exception:
+                logger.warning("Entity extraction failed for chunk %s — skipping", chunk_id)
 
         # Step 4 — persist
         with open(self.graph_path / "graph.pkl", "wb") as f:
@@ -107,7 +117,11 @@ class GraphRAGPipeline:
         # Step 2 — extract entities from query
         raw = llm.generate(_QUERY_ENTITY_PROMPT.format(query=query))
         parsed = _parse_entities(raw)
-        query_entities = [e.get("name", "").strip() for e in parsed.get("entities", [])]
+        query_entities = [
+            e.get("name", "").strip()
+            for e in parsed.get("entities", [])
+            if isinstance(e, dict)
+        ]
 
         # Build case-insensitive lookup
         node_lower = {n.lower(): n for n in graph.nodes}
