@@ -10,6 +10,7 @@ from app.agents.ingestion_agent import get_ingestion_agent
 from app.config import settings
 from app.database import get_db
 from app.models.benchmark_run import BenchmarkRun
+from app.models.eval_score import EvalScore
 from app.pipelines.naive_rag import NaiveRAGPipeline
 from app.pipelines.hyde_fusion import HyDEFusionPipeline
 from app.pipelines.self_rag import SelfRAGPipeline
@@ -97,6 +98,44 @@ async def run_benchmark(body: RunRequest, db: AsyncSession = Depends(get_db)):
     job_id = chord_result.id if hasattr(chord_result, "id") else str(chord_result)
 
     return {"run_id": body.run_id, "job_id": job_id}
+
+
+@router.get("/eval/{run_id}")
+async def get_eval_scores(run_id: str, db: AsyncSession = Depends(get_db)):
+    run_result = await db.execute(
+        select(BenchmarkRun).where(BenchmarkRun.id == uuid.UUID(run_id))
+    )
+    run = run_result.scalar_one_or_none()
+    if not run:
+        raise HTTPException(status_code=404, detail="Run not found")
+
+    scores_result = await db.execute(
+        select(EvalScore).where(EvalScore.run_id == uuid.UUID(run_id))
+    )
+    scores = scores_result.scalars().all()
+
+    return {
+        "run_id": run_id,
+        "status": run.status,
+        "pipeline_scores": [
+            {
+                "pipeline_id": s.pipeline_id,
+                "query_id": s.query_id,
+                "faithfulness": s.faithfulness,
+                "answer_relevancy": s.answer_relevancy,
+                "context_precision": s.context_precision,
+                "context_recall": s.context_recall,
+                "judge_correctness": s.judge_correctness,
+                "judge_completeness": s.judge_completeness,
+                "judge_groundedness": s.judge_groundedness,
+                "latency_score": s.latency_score,
+                "cost_usd": s.cost_usd,
+                "composite_score": s.composite_score,
+                "insight": s.insight,
+            }
+            for s in scores
+        ],
+    }
 
 
 @router.get("/{run_id}/status")
