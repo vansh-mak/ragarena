@@ -97,12 +97,12 @@ ragarena/
 ### MVP 2 - IN PROGRESS
 - [X] HyDE + RAG-Fusion pipeline
 - [X] Vectorless RAG pipeline
-- [ ] Self-RAG / CRAG pipeline
+- [X] Self-RAG / CRAG pipeline
+- [ ] Graph-RAG pipeline
 - [ ] Celery setup + parallel dispatch
 - [ ] Redis status tracking
 
 ### MVP 3 - TO DO
-- [ ] Graph-RAG pipeline
 - [ ] Agentic RAG pipeline
 - [ ] KAG / CAG pipeline
 - [ ] Ragas scorer
