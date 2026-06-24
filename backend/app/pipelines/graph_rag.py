@@ -155,8 +155,12 @@ class GraphRAGPipeline:
             ids=chunk_ids,
             include=["embeddings", "documents"],
         )
-        docs = fetched.get("documents") or []
-        embeddings = fetched.get("embeddings") or []
+        docs = fetched.get("documents")
+        if docs is None:
+            docs = []
+        embeddings = fetched.get("embeddings")
+        if embeddings is None:
+            embeddings = []
 
         if not docs:
             return []
