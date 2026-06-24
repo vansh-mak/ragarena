@@ -1,17 +1,35 @@
 import uuid
 
+import redis.asyncio as aioredis
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.agents.ingestion_agent import get_ingestion_agent
+from app.config import settings
 from app.database import get_db
 from app.models.benchmark_run import BenchmarkRun
-from app.models.pipeline_result import PipelineResult
 from app.pipelines.naive_rag import NaiveRAGPipeline
+from app.pipelines.hyde_fusion import HyDEFusionPipeline
+from app.pipelines.self_rag import SelfRAGPipeline
+from app.pipelines.graph_rag import GraphRAGPipeline
+from app.pipelines.agentic_rag import AgenticRAGPipeline
+from app.pipelines.kag_cag import KAGCAGPipeline
+from app.pipelines.vectorless_rag import VectorlessRAGPipeline
+from app.tasks.orchestrator import run_benchmark_chord
 
 router = APIRouter()
+
+_ALL_PIPELINES = [
+    NaiveRAGPipeline,
+    HyDEFusionPipeline,
+    SelfRAGPipeline,
+    GraphRAGPipeline,
+    AgenticRAGPipeline,
+    KAGCAGPipeline,
+    VectorlessRAGPipeline,
+]
 
 
 class IngestRequest(BaseModel):
@@ -48,8 +66,8 @@ async def ingest(body: IngestRequest, db: AsyncSession = Depends(get_db)):
 
     chunks = state.get("chunks", [])
 
-    pipeline = NaiveRAGPipeline(run_id=run_id)
-    pipeline.ingest(chunks)
+    for pipeline_cls in _ALL_PIPELINES:
+        pipeline_cls(run_id=run_id).ingest(chunks)
 
     run.status = "ready"
     run.chunk_count = len(chunks)
@@ -69,27 +87,26 @@ async def run_benchmark(body: RunRequest, db: AsyncSession = Depends(get_db)):
     if run.status != "ready":
         raise HTTPException(status_code=400, detail=f"Run is not ready (status={run.status})")
 
-    pipeline = NaiveRAGPipeline(run_id=body.run_id)
-    results = []
+    # Set initial Redis progress
+    r = aioredis.from_url(settings.redis_url, decode_responses=True)
+    await r.set(f"run:{body.run_id}:status", "running")
+    await r.set(f"run:{body.run_id}:progress", "0")
+    await r.aclose()
 
-    for i, query_text in enumerate(body.queries):
-        query_id = f"q{i:03d}"
-        pipeline_result = pipeline.generate(query=query_text, query_id=query_id)
+    chord_result = run_benchmark_chord(body.run_id, body.queries)
+    job_id = chord_result.id if hasattr(chord_result, "id") else str(chord_result)
 
-        record = PipelineResult(
-            run_id=run.id,
-            pipeline_id=pipeline_result["pipeline_id"],
-            query_id=query_id,
-            query_text=query_text,
-            answer=pipeline_result["answer"],
-            context_chunks=pipeline_result["context_chunks"],
-            retrieval_ms=pipeline_result["retrieval_ms"],
-            generation_ms=pipeline_result["generation_ms"],
-            token_input=pipeline_result["token_input"],
-            token_output=pipeline_result["token_output"],
-        )
-        db.add(record)
-        results.append(pipeline_result)
+    return {"run_id": body.run_id, "job_id": job_id}
 
-    await db.commit()
-    return {"run_id": body.run_id, "results": results}
+
+@router.get("/{run_id}/status")
+async def get_status(run_id: str):
+    r = aioredis.from_url(settings.redis_url, decode_responses=True)
+    status = await r.get(f"run:{run_id}:status")
+    progress = await r.get(f"run:{run_id}:progress")
+    await r.aclose()
+    return {
+        "run_id": run_id,
+        "status": status or "unknown",
+        "progress": progress or "0",
+    }

@@ -100,7 +100,7 @@ ragarena/
 - [X] Self-RAG / CRAG pipeline
 - [X] Graph-RAG pipeline
 - [X] Agentic RAG pipeline
-- [ ] KAG / CAG pipeline
+- [X] KAG / CAG pipeline
 - [ ] Celery setup + parallel dispatch
 - [ ] Redis status tracking
 
