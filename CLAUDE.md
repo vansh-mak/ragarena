@@ -99,12 +99,12 @@ ragarena/
 - [X] Vectorless RAG pipeline
 - [X] Self-RAG / CRAG pipeline
 - [X] Graph-RAG pipeline
-- [ ] Agentic RAG pipeline
+- [X] Agentic RAG pipeline
+- [ ] KAG / CAG pipeline
 - [ ] Celery setup + parallel dispatch
 - [ ] Redis status tracking
 
 ### MVP 3 - TO DO
-- [ ] KAG / CAG pipeline
 - [ ] Ragas scorer
 - [ ] LLM-as-judge scorer
 - [ ] Score aggregator + composite
