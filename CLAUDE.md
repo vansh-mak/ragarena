@@ -107,11 +107,13 @@ ragarena/
 - [X] Redis status tracking
 - [X] Switched LLM backend to Ollama(llama3.2 + nomic-embed-text)
 
-### MVP 3 - TO DO
-- [ ] Ragas scorer
-- [ ] LLM-as-judge scorer
-- [ ] Score aggregator + composite
-- [ ] Insight generator
+### MVP 3 - COMPLETE
+- [X] Ragas scorer
+- [X] LLM-as-judge scorer
+- [x] Operational metrics scorer
+- [X] Score aggregator + composite
+- [X] Insight generator
+- [x] Eval engine wired to Celery
 
 ### MVP 4 - TO DO
 - [ ] Capability profiler + query tagger
