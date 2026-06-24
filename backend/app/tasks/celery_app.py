@@ -16,3 +16,8 @@ celery_app.conf.update(
     enable_utc=True,
     task_track_started=True,
 )
+
+celery_app.autodiscover_tasks([
+    "app.tasks.pipeline_tasks",
+    "app.tasks.orchestrator",
+])

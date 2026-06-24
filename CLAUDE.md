@@ -101,8 +101,8 @@ ragarena/
 - [X] Graph-RAG pipeline
 - [X] Agentic RAG pipeline
 - [X] KAG / CAG pipeline
-- [ ] Celery setup + parallel dispatch
-- [ ] Redis status tracking
+- [X] Celery setup + parallel dispatch
+- [X] Redis status tracking
 
 ### MVP 3 - TO DO
 - [ ] Ragas scorer
