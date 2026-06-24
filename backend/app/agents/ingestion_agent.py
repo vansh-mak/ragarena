@@ -1,7 +1,10 @@
 import asyncio
 import json
+import logging
 import re
 from typing import TypedDict
+
+logger = logging.getLogger(__name__)
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langgraph.graph import StateGraph, END
@@ -62,6 +65,7 @@ def _clean_text(text: str) -> str:
 async def content_extraction_node(state: AgentState) -> AgentState:
     seen_urls: set[str] = set()
     clean_docs: list[dict] = []
+    total_seen = 0
 
     for bucket in state["raw_results"]:
         for item in bucket.get("results", []):
@@ -69,9 +73,10 @@ async def content_extraction_node(state: AgentState) -> AgentState:
             if not url or url in seen_urls:
                 continue
             seen_urls.add(url)
+            total_seen += 1
 
             text = _clean_text(item.get("content") or item.get("raw_content") or "")
-            if _approx_tokens(text) < 200:
+            if _approx_tokens(text) < 50:
                 continue
 
             clean_docs.append({
@@ -80,6 +85,11 @@ async def content_extraction_node(state: AgentState) -> AgentState:
                 "text": text,
             })
 
+    logger.info(
+        "content_extraction: %d unique URLs seen, %d passed the 50-token filter",
+        total_seen,
+        len(clean_docs),
+    )
     return {**state, "clean_docs": clean_docs}
 
 
@@ -96,7 +106,17 @@ async def chunk_embed_node(state: AgentState) -> AgentState:
             metadata_list.append({"url": doc["url"], "title": doc["title"]})
 
     if not texts_to_embed:
-        return {**state, "chunks": []}
+        # Fallback: build a single chunk from all search result titles
+        titles = []
+        for bucket in state["raw_results"]:
+            for item in bucket.get("results", []):
+                title = item.get("title", "").strip()
+                if title:
+                    titles.append(title)
+        fallback_text = " | ".join(titles) if titles else f"{state['topic']} {state['niche']}"
+        logger.warning("chunk_embed: clean_docs empty — using fallback chunk from titles")
+        embeddings = llm.embed([fallback_text])
+        return {**state, "chunks": [{"text": fallback_text, "embedding": embeddings[0], "metadata": {"url": "", "title": "fallback"}}]}
 
     embeddings = llm.embed(texts_to_embed)
 
