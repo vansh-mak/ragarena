@@ -120,9 +120,9 @@ ragarena/
 - [X] React scaffold + routing  
 - [X] Leaderboard page
 - [X] Head-to-head page
-- [ ] Cost vs quality scatter
+- [X] Cost vs quality scatter
+- [X] Latency breakdown page
 - [ ] RAG selector + heatmap
-- [ ] Latency breakdown page
 - [ ] Capability profiler + query tagger
 
 ## How to run locally
