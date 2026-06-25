@@ -21,3 +21,5 @@ networkx
 httpx
 tenacity
 numpy
+groq
+sentence-transformers

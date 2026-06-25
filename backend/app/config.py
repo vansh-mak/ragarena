@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     redis_url: str
     chromadb_path: str = "./chromadb_data"
     frontend_url: str = "http://localhost:5173"
+    use_groq: bool = False
+    groq_api_key: str = ""
+    groq_model: str = "llama-3.1-8b-instant"
+    groq_embed_model: str = "all-MiniLM-L6-v2"
 
 
 settings = Settings()
