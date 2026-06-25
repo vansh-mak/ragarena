@@ -145,3 +145,27 @@ groundedness) work correctly and differentiate pipelines meaningfully.
 In production with Groq API these scores improve significantly.
 
 ## Architecture
+
+```
+Web Search (Tavily)
+
+↓
+
+LangGraph Ingestion Agent
+
+↓
+
+7 RAG Pipelines (parallel via Celery chord)
+
+↓
+
+Eval Engine (Ragas + LLM judge + operational metrics)
+
+↓
+
+PostgreSQL + Redis
+
+↓
+
+React Dashboard (Vercel)
+```
