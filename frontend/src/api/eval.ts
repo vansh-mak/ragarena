@@ -37,3 +37,11 @@ export async function getRunStatus(runId: string): Promise<StatusResponse> {
   const { data } = await client.get<StatusResponse>(`/benchmark/${runId}/status`);
   return data;
 }
+
+export async function getQueryResults(
+  runId: string,
+  queryId: string
+): Promise<PipelineScore[]> {
+  const { data } = await client.get<LeaderboardResponse>(`/benchmark/eval/${runId}`);
+  return data.pipeline_scores.filter((s) => s.query_id === queryId);
+}

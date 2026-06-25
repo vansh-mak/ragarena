@@ -119,7 +119,7 @@ ragarena/
 ### MVP 4 - TO DO
 - [X] React scaffold + routing  
 - [X] Leaderboard page
-- [ ] Head-to-head page
+- [X] Head-to-head page
 - [ ] Cost vs quality scatter
 - [ ] RAG selector + heatmap
 - [ ] Latency breakdown page
