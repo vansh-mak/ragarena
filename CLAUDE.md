@@ -117,13 +117,13 @@ ragarena/
 - [x] Redis status correctly shows complete
 
 ### MVP 4 - TO DO
-- [ ] Capability profiler + query tagger
-- [ ] React scaffold + routing  
-- [ ] Leaderboard page
+- [X] React scaffold + routing  
+- [X] Leaderboard page
 - [ ] Head-to-head page
 - [ ] Cost vs quality scatter
 - [ ] RAG selector + heatmap
 - [ ] Latency breakdown page
+- [ ] Capability profiler + query tagger
 
 ## How to run locally
 ```bash
