@@ -114,10 +114,11 @@ ragarena/
 - [X] Score aggregator + composite
 - [X] Insight generator
 - [x] Eval engine wired to Celery
+- [x] Redis status correctly shows complete
 
 ### MVP 4 - TO DO
 - [ ] Capability profiler + query tagger
-- [ ] React scaffold + routing
+- [ ] React scaffold + routing  
 - [ ] Leaderboard page
 - [ ] Head-to-head page
 - [ ] Cost vs quality scatter
