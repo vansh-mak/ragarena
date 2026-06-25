@@ -116,14 +116,14 @@ ragarena/
 - [x] Eval engine wired to Celery
 - [x] Redis status correctly shows complete
 
-### MVP 4 - IN PROGRESS
+### MVP 4 - COMPLETE
 - [X] React scaffold + routing  
 - [X] Leaderboard page
 - [X] Head-to-head page
 - [X] Cost vs quality scatter
 - [X] Latency breakdown page
-- [ ] RAG selector + heatmap
-- [ ] Capability profiler + query tagger
+- [X] RAG selector + heatmap
+<!-- - [ ] Capability profiler -->
 
 ## How to run locally
 ```bash
