@@ -116,7 +116,7 @@ ragarena/
 - [x] Eval engine wired to Celery
 - [x] Redis status correctly shows complete
 
-### MVP 4 - TO DO
+### MVP 4 - IN PROGRESS
 - [X] React scaffold + routing  
 - [X] Leaderboard page
 - [X] Head-to-head page
